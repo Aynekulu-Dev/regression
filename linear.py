@@ -1,13 +1,16 @@
-from scipy.integrate import odeint
+# simple_linear_regression.py
 import numpy as np
+import matplotlib.pyplot as plt
 
+# Generate synthetic data: y = 2*x + 1 + some noise
+np.random.seed(42) # For reproducibility
+X = 2 * np.random.rand(100, 1) # 100 random numbers between 0 and 2
+y = 1 + 2 * X + np.random.randn(100, 1) # y = 1 + 2x + noise
 
-
-A = np.array([[1, 2], [3, 4]])
-B = np.array([[5, 6], [7, 8]])
-addition = A + B
-multiplication = np.dot(A, B)  # linalg.multi_dot for multiple matrices
-transpose_A = A.T
-print("A + B:\n", addition)
-print("A * B:\n", multiplication)
-print("A^T:\n", transpose_A)
+# Plot and save the data
+plt.scatter(X, y)
+plt.xlabel('X (Feature)')
+plt.ylabel('y (Target)')
+plt.title('Synthetic Data for Linear Regression')
+plt.savefig('synthetic_data.png')
+plt.close()

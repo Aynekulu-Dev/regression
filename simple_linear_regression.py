@@ -5,7 +5,6 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.model_selection import cross_val_score, GridSearchCV
 from sklearn.datasets import fetch_california_housing
 from sklearn.linear_model import ElasticNet
-
 print("\n=== Step 11: Load Real Dataset (California Housing) ===")
 housing = fetch_california_housing()
 X_real = housing.data
@@ -187,6 +186,25 @@ y_pred_lasso_poly = lasso_poly_reg.predict(X_poly)
 lasso_poly_error = y_pred_lasso_poly - y.ravel()
 lasso_poly_cost = (1/m) * np.sum(lasso_poly_error ** 2)
 print(f"Final Mean Squared Error (Lasso Polynomial): {lasso_poly_cost:.3f}")
+print("\n=== Step 12: Elastic Net Regression ===")
+# Elastic Net for linear features
+elastic_reg = ElasticNet(alpha=1.0, l1_ratio=0.5)  # l1_ratio balances L1 and L2 penalties
+elastic_reg.fit(X, y.ravel())
+y_pred_elastic = elastic_reg.predict(X)
+print(f"Elastic Net Linear parameters: Intercept = {elastic_reg.intercept_:.3f}, Slope = {elastic_reg.coef_[0]:.3f}")
+
+# Elastic Net for polynomial features
+elastic_poly_reg = ElasticNet(alpha=1.0, l1_ratio=0.5)
+elastic_poly_reg.fit(X_poly, y.ravel())
+y_plot_elastic_poly = elastic_poly_reg.predict(X_plot_poly)
+print(f"Elastic Net Polynomial parameters: Intercept = {elastic_poly_reg.intercept_:.3f}, "
+      f"Coefficients = {[f'{coef:.3f}' for coef in elastic_poly_reg.coef_]}")
+
+# Calculate MSE
+y_pred_elastic_poly = elastic_poly_reg.predict(X_poly)
+elastic_poly_error = y_pred_elastic_poly - y.ravel()
+elastic_poly_cost = (1/m) * np.sum(elastic_poly_error ** 2)
+print(f"Final Mean Squared Error (Elastic Net Polynomial): {elastic_poly_cost:.3f}")
 
 print("\n=== Step 8: Cross-Validation ===")
 # Perform 5-fold cross-validation

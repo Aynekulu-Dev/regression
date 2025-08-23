@@ -155,6 +155,20 @@ lasso_reg = Lasso(alpha=1.0)
 lasso_reg.fit(X, y.ravel())
 y_pred_lasso = lasso_reg.predict(X)
 print(f"Lasso Linear parameters: Intercept = {lasso_reg.intercept_:.3f}, Slope = {lasso_reg.coef_[0]:.3f}")
+
+# Lasso Regression for polynomial features
+lasso_poly_reg = Lasso(alpha=1.0)
+lasso_poly_reg.fit(X_poly, y.ravel())
+y_plot_lasso_poly = lasso_poly_reg.predict(X_plot_poly)
+print(f"Lasso Polynomial parameters: Intercept = {lasso_poly_reg.intercept_:.3f}, "
+      f"Coefficients = {[f'{coef:.3f}' for coef in lasso_poly_reg.coef_]}")
+
+# Calculate MSE for Lasso models
+y_pred_lasso_poly = lasso_poly_reg.predict(X_poly)
+lasso_poly_error = y_pred_lasso_poly - y.ravel()
+lasso_poly_cost = (1/m) * np.sum(lasso_poly_error ** 2)
+print(f"Final Mean Squared Error (Lasso Polynomial): {lasso_poly_cost:.3f}")
+
 print("\n=== Step 12: Elastic Net Regression ===")
 # Elastic Net for linear features
 elastic_reg = ElasticNet(alpha=1.0, l1_ratio=0.5)  # l1_ratio balances L1 and L2 penalties
@@ -175,19 +189,6 @@ elastic_poly_error = y_pred_elastic_poly - y.ravel()
 elastic_poly_cost = (1/m) * np.sum(elastic_poly_error ** 2)
 print(f"Final Mean Squared Error (Elastic Net Polynomial): {elastic_poly_cost:.3f}")
 
-# Lasso Regression for polynomial features
-lasso_poly_reg = Lasso(alpha=1.0)
-lasso_poly_reg.fit(X_poly, y.ravel())
-y_plot_lasso_poly = lasso_poly_reg.predict(X_plot_poly)
-print(f"Lasso Polynomial parameters: Intercept = {lasso_poly_reg.intercept_:.3f}, "
-      f"Coefficients = {[f'{coef:.3f}' for coef in lasso_poly_reg.coef_]}")
-
-# Calculate MSE for Lasso models
-y_pred_lasso_poly = lasso_poly_reg.predict(X_poly)
-lasso_poly_error = y_pred_lasso_poly - y.ravel()
-lasso_poly_cost = (1/m) * np.sum(lasso_poly_error ** 2)
-print(f"Final Mean Squared Error (Lasso Polynomial): {lasso_poly_cost:.3f}")
-
 print("\n=== Step 8: Cross-Validation ===")
 # Perform 5-fold cross-validation
 cv_folds = 5
@@ -197,6 +198,8 @@ ridge_cv_scores = cross_val_score(ridge_reg, X, y.ravel(), scoring='neg_mean_squ
 ridge_poly_cv_scores = cross_val_score(ridge_poly_reg, X_poly, y.ravel(), scoring='neg_mean_squared_error', cv=cv_folds)
 lasso_cv_scores = cross_val_score(lasso_reg, X, y.ravel(), scoring='neg_mean_squared_error', cv=cv_folds)
 lasso_poly_cv_scores = cross_val_score(lasso_poly_reg, X_poly, y.ravel(), scoring='neg_mean_squared_error', cv=cv_folds)
+elastic_cv_scores = cross_val_score(elastic_reg, X, y.ravel(), scoring='neg_mean_squared_error', cv=cv_folds)
+elastic_poly_cv_scores = cross_val_score(elastic_poly_reg, X_poly, y.ravel(), scoring='neg_mean_squared_error', cv=cv_folds)
 
 print(f"Cross-Validation MSE (Linear): {-lin_cv_scores.mean():.3f} (+/- {lin_cv_scores.std() * 2:.3f})")
 print(f"Cross-Validation MSE (Polynomial): {-poly_cv_scores.mean():.3f} (+/- {poly_cv_scores.std() * 2:.3f})")
@@ -204,8 +207,6 @@ print(f"Cross-Validation MSE (Ridge Linear): {-ridge_cv_scores.mean():.3f} (+/- 
 print(f"Cross-Validation MSE (Ridge Polynomial): {-ridge_poly_cv_scores.mean():.3f} (+/- {ridge_poly_cv_scores.std() * 2:.3f})")
 print(f"Cross-Validation MSE (Lasso Linear): {-lasso_cv_scores.mean():.3f} (+/- {lasso_cv_scores.std() * 2:.3f})")
 print(f"Cross-Validation MSE (Lasso Polynomial): {-lasso_poly_cv_scores.mean():.3f} (+/- {lasso_poly_cv_scores.std() * 2:.3f})")
-elastic_cv_scores = cross_val_score(elastic_reg, X, y.ravel(), scoring='neg_mean_squared_error', cv=5)
-elastic_poly_cv_scores = cross_val_score(elastic_poly_reg, X_poly, y.ravel(), scoring='neg_mean_squared_error', cv=5)
 print(f"Cross-Validation MSE (Elastic Net Linear): {-elastic_cv_scores.mean():.3f} (+/- {elastic_cv_scores.std() * 2:.3f})")
 print(f"Cross-Validation MSE (Elastic Net Polynomial): {-elastic_poly_cv_scores.mean():.3f} (+/- {elastic_poly_cv_scores.std() * 2:.3f})")
 

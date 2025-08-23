@@ -3,6 +3,14 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression, Ridge, Lasso
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.model_selection import cross_val_score, GridSearchCV
+from sklearn.datasets import fetch_california_housing
+
+print("\n=== Step 11: Load Real Dataset (California Housing) ===")
+housing = fetch_california_housing()
+X_real = housing.data
+y_real = housing.target.reshape(-1, 1)
+feature_names = housing.feature_names
+print(f"Loaded California Housing dataset with {X_real.shape[0]} samples and {X_real.shape[1]} features")
 
 print("=== Step 1: Generate Synthetic Data ===")
 # Generate synthetic data: y = 2*x + 1 + some noise

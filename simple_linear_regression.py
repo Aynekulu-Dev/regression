@@ -204,6 +204,10 @@ print(f"Cross-Validation MSE (Ridge Linear): {-ridge_cv_scores.mean():.3f} (+/- 
 print(f"Cross-Validation MSE (Ridge Polynomial): {-ridge_poly_cv_scores.mean():.3f} (+/- {ridge_poly_cv_scores.std() * 2:.3f})")
 print(f"Cross-Validation MSE (Lasso Linear): {-lasso_cv_scores.mean():.3f} (+/- {lasso_cv_scores.std() * 2:.3f})")
 print(f"Cross-Validation MSE (Lasso Polynomial): {-lasso_poly_cv_scores.mean():.3f} (+/- {lasso_poly_cv_scores.std() * 2:.3f})")
+elastic_cv_scores = cross_val_score(elastic_reg, X, y.ravel(), scoring='neg_mean_squared_error', cv=5)
+elastic_poly_cv_scores = cross_val_score(elastic_poly_reg, X_poly, y.ravel(), scoring='neg_mean_squared_error', cv=5)
+print(f"Cross-Validation MSE (Elastic Net Linear): {-elastic_cv_scores.mean():.3f} (+/- {elastic_cv_scores.std() * 2:.3f})")
+print(f"Cross-Validation MSE (Elastic Net Polynomial): {-elastic_poly_cv_scores.mean():.3f} (+/- {elastic_poly_cv_scores.std() * 2:.3f})")
 
 print("\n=== Step 9: Hyperparameter Tuning (Grid Search) ===")
 # Grid search for Ridge and Lasso alpha

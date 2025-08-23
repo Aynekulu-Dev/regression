@@ -1,13 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.preprocessing import PolynomialFeatures
+from sklearn.model_selection import cross_val_score
 
 print("=== Step 1: Generate Synthetic Data ===")
 # Generate synthetic data: y = 2*x + 1 + some noise
-np.random.seed(42) # For reproducibility
-X = 2 * np.random.rand(100, 1) # 100 random numbers between 0 and 2
-y = 1 + 2 * X + np.random.randn(100, 1) # y = 1 + 2x + noise
+np.random.seed(42)  # For reproducibility
+X = 2 * np.random.rand(100, 1)  # 100 random numbers between 0 and 2
+y = 1 + 2 * X + np.random.randn(100, 1)  # y = 1 + 2x + noise
 
 # Plot and save the raw data
 plt.figure(figsize=(10, 6))
@@ -24,7 +25,7 @@ print(f"Generated {len(X)} data points")
 
 print("\n=== Step 2: Implement Gradient Descent from Scratch ===")
 # Initialize parameters (theta0 and theta1) randomly
-theta = np.random.randn(2, 1) # Random initialization
+theta = np.random.randn(2, 1)  # Random initialization
 print(f"Initial random parameters: theta0 = {theta[0][0]:.3f}, theta1 = {theta[1][0]:.3f}")
 
 # Add a column of 1s to X for the intercept term (theta0)
@@ -65,7 +66,7 @@ y_pred = X_b.dot(theta)
 # Plot the linear regression result
 plt.figure(figsize=(10, 6))
 plt.scatter(X, y, alpha=0.7, label='Raw Data')
-plt.plot(X, y_pred, 'r-', linewidth=2, label=f'Linear Fit: y = {theta[0][0]:.2f} + {theta[1][0]:.2f}x')
+plt.plot(X, y_pred, 'r-', linewidth=2, label=f'Linear Fit (Scratch): y = {theta[0][0]:.2f} + {theta[1][0]:.2f}x')
 plt.xlabel('X (Feature)')
 plt.ylabel('y (Target)')
 plt.title('Linear Regression Fit (From Scratch)')
@@ -75,10 +76,10 @@ plt.savefig('linear_regression_fit_scratch.png')
 plt.close()
 print("Saved 'linear_regression_fit_scratch.png'")
 
-# Calculate final error for linear regression
+# Calculate final error for linear regression (scratch)
 final_error = y_pred - y
 final_cost = (1/m) * np.sum(final_error ** 2)
-print(f"Final Mean Squared Error (Linear): {final_cost:.3f}")
+print(f"Final Mean Squared Error (Linear Scratch): {final_cost:.3f}")
 
 print("\n=== Step 4: Compare with scikit-learn Linear Regression ===")
 # Train using scikit-learn for comparison
@@ -119,18 +120,54 @@ poly_error = y_pred_poly - y
 poly_cost = (1/m) * np.sum(poly_error ** 2)
 print(f"Final Mean Squared Error (Polynomial): {poly_cost:.3f}")
 
-# Plot both linear and polynomial fits
-plt.figure(figsize=(10, 6))
+print("\n=== Step 6: Ridge Regression (Linear and Polynomial) ===")
+# Ridge Regression for linear features
+ridge_reg = Ridge(alpha=1.0)  # alpha controls regularization strength
+ridge_reg.fit(X, y)
+y_pred_ridge = ridge_reg.predict(X)
+print(f"Ridge Linear parameters: Intercept = {ridge_reg.intercept_[0]:.3f}, Slope = {ridge_reg.coef_[0][0]:.3f}")
+
+# Ridge Regression for polynomial features
+ridge_poly_reg = Ridge(alpha=1.0)
+ridge_poly_reg.fit(X_poly, y)
+y_plot_ridge_poly = ridge_poly_reg.predict(X_plot_poly)
+print(f"Ridge Polynomial parameters: Intercept = {ridge_poly_reg.intercept_[0]:.3f}, "
+      f"Coefficients = {[f'{coef:.3f}' for coef in ridge_poly_reg.coef_[0]]}")
+
+# Calculate MSE for Ridge models
+y_pred_ridge_poly = ridge_poly_reg.predict(X_poly)
+ridge_poly_error = y_pred_ridge_poly - y
+ridge_poly_cost = (1/m) * np.sum(ridge_poly_error ** 2)
+print(f"Final Mean Squared Error (Ridge Polynomial): {ridge_poly_cost:.3f}")
+
+print("\n=== Step 7: Cross-Validation ===")
+# Perform 5-fold cross-validation
+cv_folds = 5
+lin_cv_scores = cross_val_score(lin_reg, X, y.ravel(), scoring='neg_mean_squared_error', cv=cv_folds)
+poly_cv_scores = cross_val_score(poly_reg, X_poly, y.ravel(), scoring='neg_mean_squared_error', cv=cv_folds)
+ridge_cv_scores = cross_val_score(ridge_reg, X, y.ravel(), scoring='neg_mean_squared_error', cv=cv_folds)
+ridge_poly_cv_scores = cross_val_score(ridge_poly_reg, X_poly, y.ravel(), scoring='neg_mean_squared_error', cv=cv_folds)
+
+print(f"Cross-Validation MSE (Linear): {-lin_cv_scores.mean():.3f} (+/- {lin_cv_scores.std() * 2:.3f})")
+print(f"Cross-Validation MSE (Polynomial): {-poly_cv_scores.mean():.3f} (+/- {poly_cv_scores.std() * 2:.3f})")
+print(f"Cross-Validation MSE (Ridge Linear): {-ridge_cv_scores.mean():.3f} (+/- {ridge_cv_scores.std() * 2:.3f})")
+print(f"Cross-Validation MSE (Ridge Polynomial): {-ridge_poly_cv_scores.mean():.3f} (+/- {ridge_poly_cv_scores.std() * 2:.3f})")
+
+print("\n=== Step 8: Plot All Models ===")
+# Plot all fits
+plt.figure(figsize=(12, 8))
 plt.scatter(X, y, alpha=0.7, label='Raw Data')
-plt.plot(X, y_pred, 'r-', linewidth=2, label=f'Linear Fit: y = {theta[0][0]:.2f} + {theta[1][0]:.2f}x')
+plt.plot(X, y_pred, 'r-', linewidth=2, label=f'Linear Fit (Scratch): y = {theta[0][0]:.2f} + {theta[1][0]:.2f}x')
 plt.plot(X_plot, y_plot_poly, 'g--', linewidth=2, label='Polynomial Fit (Degree 2)')
+plt.plot(X_plot, ridge_reg.predict(X_plot), 'b-.', linewidth=2, label=f'Ridge Linear: y = {ridge_reg.intercept_[0]:.2f} + {ridge_reg.coef_[0][0]:.2f}x')
+plt.plot(X_plot, y_plot_ridge_poly, 'm:', linewidth=2, label='Ridge Polynomial (Degree 2)')
 plt.xlabel('X (Feature)')
 plt.ylabel('y (Target)')
-plt.title('Linear vs Polynomial Regression')
+plt.title('Linear vs Polynomial vs Ridge Regression')
 plt.legend()
 plt.grid(True, alpha=0.3)
-plt.savefig('linear_vs_polynomial_regression.png')
+plt.savefig('all_regression_fits.png')
 plt.close()
-print("Saved 'linear_vs_polynomial_regression.png'")
+print("Saved 'all_regression_fits.png'")
 
 print("\n=== Script Complete ===")
